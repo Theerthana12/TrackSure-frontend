@@ -1,0 +1,88 @@
+.default-container {
+  height: 100vh;
+  width: 100vw;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  color: rgb(21, 7, 89);
+}
+
+/* Top-left logo and title */
+.default-header {
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+.default-logo {
+  width: 75px;
+  height: 75px;
+}
+
+.default-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Cards layout */
+.default-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  align-items: center;
+  justify-content: center;
+}
+
+.default-card {
+  background:rgb(247, 244, 244);
+  border-radius: 16px;
+  padding: 25px 50px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  width: 280px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.default-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
+}
+
+.default-card h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #262525;
+}
+
+.default-card p {
+  font-size: 14px;
+  color: #3a3838;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .default-title {
+    font-size: 22px;
+  }
+
+  .default-card {
+    width: 80%;
+    padding: 20px;
+  }
+
+  .default-logo {
+    width: 35px;
+    height: 35px;
+  }
+}

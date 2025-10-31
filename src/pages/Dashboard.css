@@ -1,0 +1,143 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: white; /* dark blue background */
+  color: #000;
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: -20px 20px;
+  background:white;
+  color:#001f3f;
+  border-bottom: 1px solid #e6e6e6;
+  font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap:0px;
+}
+
+.app-logo {
+  height: 75px;
+  width: 75px;
+}
+
+.site-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.back-btn,
+.logout-btn {
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.back-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #001f3f;
+}
+
+.logout-btn {
+  border: none;
+  background: #ff5b5b;
+  color: white;
+}
+
+/* Main content */
+.dashboard-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Map Section */
+.map-section {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Alerts Section */
+.alerts-section {
+  width: 38%;
+  min-width: 320px;
+  max-width: 520px;
+  border-left: 1px solid #eee;
+  background: #fafafa;
+  padding: 20px;
+  overflow-y: auto;
+  font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.alerts-section h2 {
+  margin-top: 6px;
+  color: #001f3f;
+}
+
+.no-alerts {
+  color: #666;
+  margin-top: 20px;
+}
+
+/* Alert Card */
+.alert-card {
+  background: #fff;
+  padding: 12px 14px;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+}
+
+.alert-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert-type {
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #001f3f;
+}
+
+.alert-distance {
+  background: #ff6b6b;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 18px;
+}
+
+.alert-info {
+  margin-top: 8px;
+  color: #555;
+}
+
+/* Popup */
+.popup-content {
+  min-width: 160px;
+}
+
+.popup-distance {
+  margin-top: 6px;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
