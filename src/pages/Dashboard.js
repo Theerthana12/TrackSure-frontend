@@ -1,17 +1,22 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import L from "leaflet";
 import { io } from "socket.io-client";
 import "leaflet/dist/leaflet.css";
+import "./Dashboard.css";
 import applogo from "../s.png";
-import "./Dashboard.css"; // 👈 imported CSS
 
+// Marker icons
 const ALERT_ICON = new L.Icon({
   iconUrl: "/alert.png",
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -38],
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+const HUMAN_ICON = new L.Icon({
+  iconUrl: "/human.png",
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
 });
 
 const DEFAULT_CENTER = [13.1215, 77.6266];
@@ -19,107 +24,74 @@ const DEFAULT_CENTER = [13.1215, 77.6266];
 export default function Dashboard({ onLogout }) {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
+  const [maxBox, setMaxBox] = useState(null);
   const socketRef = useRef(null);
 
   const BACKEND =
     process.env.REACT_APP_API_URL?.replace(/\/$/, "") ||
-    "http://192.168.1.2:5000";
+    "http://10.103.113.104:5000";
 
   useEffect(() => {
-    let mounted = true;
-    async function loadAlerts() {
-      try {
-        const r = await fetch(`${BACKEND}/api/alerts`);
-        if (!r.ok) throw new Error("Failed to fetch alerts");
-        const data = await r.json();
-        data.sort((a, b) => new Date(b.time) - new Date(a.time));
-        if (mounted) {
-          setAlerts(data);
-          const firstWithLoc = data.find(
-            (x) => x.location && x.location.lat && x.location.lon
-          );
-          if (firstWithLoc)
-            setMapCenter([firstWithLoc.location.lat, firstWithLoc.location.lon]);
-        }
-      } catch (err) {
-        console.error("Load alerts error:", err);
-      }
-    }
-    loadAlerts();
-    return () => {
-      mounted = false;
-    };
-  }, [BACKEND]);
-
-  useEffect(() => {
-    const socket = io(BACKEND, {
-      transports: ["websocket", "polling"],
-      reconnectionAttempts: 10,
-      timeout: 20000,
-    });
+    const socket = io(BACKEND, { transports: ["websocket", "polling"] });
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      console.log("⚡️ Socket connected:", socket.id);
+    // Fetch initial data
+    fetch(`${BACKEND}/api/alerts`)
+      .then((r) => r.json())
+      .then((data) => {
+        data.sort((a, b) => new Date(b.time) - new Date(a.time));
+        setAlerts(data);
+      });
+
+    fetch(`${BACKEND}/api/locations?limit=100`)
+      .then((r) => r.json())
+      .then((data) => setLocations(data));
+
+    socket.on("new_alert", (a) => {
+      setAlerts((prev) => [a, ...prev]);
+      playBeep();
     });
-
-    socket.on("connect_error", (err) => {
-      console.warn("Socket connection error:", err.message || err);
-    });
-
-    const handleNew = (alert) => {
-      console.log("Socket new alert:", alert);
-      const normalized = { ...alert };
-      if (!normalized.location && (alert.lat || alert.latitude)) {
-        normalized.location = {
-          lat: alert.lat || alert.latitude,
-          lon: alert.lon || alert.longitude,
-        };
-      }
-      setAlerts((prev) => [normalized, ...prev]);
-      const lat = normalized.location?.lat;
-      const lon = normalized.location?.lon;
-      if (lat && lon) setMapCenter([lat, lon]);
-    };
-
-    socket.on("new_alert", handleNew);
-    socket.on("alertData", handleNew);
-
-    socket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
-    });
+    socket.on("alertData", (a) => setAlerts((prev) => [a, ...prev]));
+    socket.on("location_update", (loc) =>
+      setLocations((prev) => [...prev, loc].slice(-200))
+    );
 
     return () => {
-      socket.off("new_alert", handleNew);
-      socket.off("alertData", handleNew);
       socket.disconnect();
       socketRef.current = null;
     };
   }, [BACKEND]);
 
-  function formatTime(t) {
+  const latest = locations[locations.length - 1];
+  const humanPos =
+    latest && latest.location?.lat && latest.location?.lon
+      ? [latest.location.lat, latest.location.lon]
+      : DEFAULT_CENTER;
+
+  const playBeep = () => {
     try {
-      const d = new Date(t);
-      return d.toLocaleString();
-    } catch {
-      return t || "";
-    }
-  }
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      osc.frequency.value = 600;
+      osc.connect(ctx.destination);
+      osc.start();
+      setTimeout(() => osc.stop(), 150);
+    } catch {}
+  };
+
+  const formatTime = (t) => (t ? new Date(t).toLocaleString() : "—");
 
   return (
-    <div className="dashboard-container">
-      {/* Header */}
+    <div className={`dashboard ${maxBox ? "scroll-enabled" : "no-scroll"}`}>
       <header className="dashboard-header">
         <div className="header-left">
           <img src={applogo} alt="TrackSure Logo" className="app-logo" />
-          <h1 className="site-title">TrackSure</h1>
+          <h1>TrackSure Dashboard</h1>
         </div>
-
-        <div className="header-buttons">
-          <button className="back-btn" onClick={() => navigate("/default")}>
-            ← Back
-          </button>
+        <div className="header-right">
+          <button onClick={() => navigate("/default")}>← Back</button>
           <button
             className="logout-btn"
             onClick={() => {
@@ -133,84 +105,133 @@ export default function Dashboard({ onLogout }) {
         </div>
       </header>
 
-      {/* Main */}
-      <main className="dashboard-main">
-        <section className="map-section">
-          <MapContainer
-            center={mapCenter}
-            zoom={15}
-            style={{ height: "100%", width: "100%" }}
-            whenCreated={(map) => setTimeout(() => map.invalidateSize(), 300)}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {alerts
-              .filter(
-                (a) =>
-                  a?.location?.lat != null &&
-                  a?.location?.lon != null &&
-                  !isNaN(Number(a.location.lat)) &&
-                  !isNaN(Number(a.location.lon))
-              )
-              .map((a, i) => (
-                <Marker
-                  key={a._id || i}
-                  position={[a.location.lat, a.location.lon]}
-                  icon={ALERT_ICON}
-                >
-                  <Popup>
-                    <div className="popup-content">
-                      <strong>{a.alertType?.toUpperCase() || "ALERT"}</strong>
-                      <div>{a.deviceId || a.device || "belt001"}</div>
-                      <div>{formatTime(a.time)}</div>
-                      <div>
-                        {a.location.lat.toFixed(6)}, {a.location.lon.toFixed(6)}
-                      </div>
-                      <div className="popup-distance">
-                        {a.distance ? `${a.distance} cm` : ""}
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-          </MapContainer>
-        </section>
-
-        <section className="alerts-section">
-          <h2>Live Alerts</h2>
-          <div className="alerts-list">
-            {alerts.length === 0 ? (
-              <p className="no-alerts">No alerts yet...</p>
-            ) : (
-              alerts.map((a, i) => (
-                <div key={a._id || i} className="alert-card">
-                  <div className="alert-top">
-                    <span className="alert-type">
-                      {a.alertType || "obstacle"}
-                    </span>
-                    <span className="alert-distance">
-                      {a.distance ? `${a.distance} cm` : "—"}
-                    </span>
-                  </div>
-                  <div className="alert-info">
-                    <div>
-                      <strong>Device:</strong> {a.deviceId || a.device || "belt001"}
-                    </div>
-                    <div>
-                      <strong>Time:</strong> {formatTime(a.time)}
-                    </div>
-                    <div>
-                      <strong>Location:</strong>{" "}
-                      {a.location?.lat && a.location?.lon
-                        ? `${a.location.lat.toFixed(6)}, ${a.location.lon.toFixed(6)}`
-                        : "unknown"}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+      <div className={`grid-container small ${maxBox ? "blur-others" : ""}`}>
+        {/* 🧍 Live Tracking */}
+        <div className={`grid-box ${maxBox === "tracking" ? "centered" : ""}`}>
+          <div className="box-header">
+            <h2>🧍 Live Tracking</h2>
+            <button
+              onClick={() => setMaxBox(maxBox === "tracking" ? null : "tracking")}
+            >
+              {maxBox === "tracking" ? "–" : "🔍"}
+            </button>
           </div>
-        </section>
-      </main>
+          <MapContainer center={mapCenter} zoom={15} style={{ height: "100%" }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {locations.length > 1 && (
+              <Polyline
+                positions={locations.map((l) => [
+                  l.location.lat,
+                  l.location.lon,
+                ])}
+                color="cyan"
+                weight={3}
+              />
+            )}
+            {humanPos && (
+              <Marker position={humanPos} icon={HUMAN_ICON}>
+                <Popup>Current Position</Popup>
+              </Marker>
+            )}
+          </MapContainer>
+        </div>
+
+        {/* ⚠️ Obstacle Location */}
+        <div className={`grid-box ${maxBox === "obstacle" ? "centered" : ""}`}>
+          <div className="box-header">
+            <h2>⚠️ Obstacle Location</h2>
+            <button
+              onClick={() => setMaxBox(maxBox === "obstacle" ? null : "obstacle")}
+            >
+              {maxBox === "obstacle" ? "–" : "🔍"}
+            </button>
+          </div>
+          <MapContainer center={mapCenter} zoom={15} style={{ height: "100%" }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {alerts.map(
+              (a, i) =>
+                a.location && (
+                  <Marker
+                    key={i}
+                    position={[a.location.lat, a.location.lon]}
+                    icon={ALERT_ICON}
+                  >
+                    <Popup>
+                      <strong>{a.alertType}</strong>
+                      <br />
+                      {a.distance} cm<br />
+                      {formatTime(a.time)}
+                    </Popup>
+                  </Marker>
+                )
+            )}
+          </MapContainer>
+        </div>
+
+        {/* 🗺️ Recent Trip */}
+        <div className={`grid-box ${maxBox === "trip" ? "centered" : ""}`}>
+          <div className="box-header">
+            <h2>🗺️ Recent Trip</h2>
+            <button
+              onClick={() => setMaxBox(maxBox === "trip" ? null : "trip")}
+            >
+              {maxBox === "trip" ? "–" : "🔍"}
+            </button>
+          </div>
+          <MapContainer center={mapCenter} zoom={15} style={{ height: "100%" }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {locations.length > 1 && (
+              <Polyline
+                positions={locations.map((l) => [
+                  l.location.lat,
+                  l.location.lon,
+                ])}
+                color="lime"
+                weight={3}
+              />
+            )}
+            {humanPos && (
+              <Marker position={humanPos} icon={HUMAN_ICON}>
+                <Popup>Current Position</Popup>
+              </Marker>
+            )}
+          </MapContainer>
+        </div>
+
+        {/* 📜 Live Alerts */}
+        <div className={`grid-box ${maxBox === "alerts" ? "centered" : ""}`}>
+          <div className="box-header">
+            <h2>📜 Live Alerts</h2>
+            <button
+              onClick={() => setMaxBox(maxBox === "alerts" ? null : "alerts")}
+            >
+              {maxBox === "alerts" ? "–" : "🔍"}
+            </button>
+          </div>
+          <div className="alerts-list">
+            {alerts.map((a, i) => (
+              <div key={i} className="alert-card">
+                <div className="alert-type">{a.alertType}</div>
+                <div>📏 {a.distance} cm</div>
+                <div>
+                  📍{" "}
+                  <a
+                    href={`https://www.google.com/maps?q=${a.location.lat},${a.location.lon}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="map-link"
+                  >
+                    View on Google Maps
+                  </a>
+                </div>
+                <div>🕒 {formatTime(a.time)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
+
