@@ -1,0 +1,17 @@
+/* src/components/MapViewAnimated.css */
+
+/* make Leaflet popups and markers feel nicer */
+.leaflet-container {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* optional: popup content tweaks */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+/* mobile responsiveness tweaks */
+@media (max-width: 720px) {
+  .leaflet-container { font-size: 14px; }
+}
