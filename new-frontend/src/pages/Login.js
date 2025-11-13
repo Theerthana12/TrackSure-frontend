@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import applogo from "../../s.png";
@@ -10,8 +10,25 @@ function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    setPhone("");
+    setPassword("");
+  }, []);
+
+  const isValidPhone = (p) => /^[6-9]\d{9}$/.test(p);
+
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!isValidPhone(phone)) {
+      alert("Enter a valid 10-digit mobile number (India).");
+      return;
+    }
+    if (!password || password.length < 4) {
+      alert("Enter a valid password.");
+      return;
+    }
+
     try {
       const res = await axios.post(
         (process.env.REACT_APP_API_URL || "http://localhost:5000") + "/api/auth/login",
@@ -37,37 +54,33 @@ function Login({ onLogin }) {
 
       <div className="login-card">
         <h2>Login</h2>
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} autoComplete="off">
           <input
+            name="phone"
+            autoComplete="tel"
             type="text"
             placeholder="Phone"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
             required
           />
 
           <div className="password-container">
             <input
+              name="password"
+              autoComplete="new-password"
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <span className="toggle-password" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} role="button">
-  {showPassword ? (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M10.58 10.58A3 3 0 0 0 13.42 13.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M21.6 12.14c-1.84 3.37-6.03 6.36-9.6 6.36-2.35 0-4.49-1.04-6.04-2.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  ) : (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-    </svg>
-  )}
-</span>
+            <span
+              className="toggle-password"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Ìπà" : "Ì±Å"}
+            </span>
           </div>
 
           <button type="submit">Login</button>
