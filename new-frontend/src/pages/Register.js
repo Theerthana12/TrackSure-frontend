@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./Register.css";            // same folder
-import applogo from "../s.png";  // one level up to src
+import "./Register.css";
+import applogo from "../../s.png";
 
 function Register() {
   const [name, setName] = useState("");
@@ -14,11 +14,14 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        name,
-        phone,
-        password,
-      });
+      await axios.post(
+        (process.env.REACT_APP_API_URL || "http://localhost:5000") + "/api/auth/register",
+        {
+          name,
+          phone,
+          password,
+        }
+      );
       alert("Registration successful! Please login.");
       navigate("/login");
     } catch (err) {
@@ -64,7 +67,7 @@ function Register() {
               className="toggle-password"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? "ğŸ™ˆ" : "ğŸ‘ï¸"}
+              {showPassword ? "í¹ˆ" : "í±ï¸"}
             </span>
           </div>
 
@@ -83,5 +86,3 @@ function Register() {
 }
 
 export default Register;
-
-

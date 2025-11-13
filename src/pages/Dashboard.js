@@ -31,7 +31,7 @@ export default function Dashboard({ onLogout }) {
 
   const BACKEND =
     process.env.REACT_APP_API_URL?.replace(/\/$/, "") ||
-    "http://10.103.113.104:5000";
+    process.env.REACT_APP_API_URL || "http://10.103.113.104:5000";
 
   useEffect(() => {
     const socket = io(BACKEND, { transports: ["websocket", "polling"] });

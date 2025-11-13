@@ -13,12 +13,15 @@ function Login({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        phone,
-        password,
-      });
+      const res = await axios.post(
+        (process.env.REACT_APP_API_URL || "http://localhost:5000") + "/api/auth/login",
+        {
+          phone,
+          password,
+        }
+      );
       localStorage.setItem("tracksure_token", res.data.token);
-      onLogin();
+      onLogin && onLogin();
       navigate("/dashboard");
     } catch (err) {
       alert("Invalid phone or password");
@@ -27,13 +30,11 @@ function Login({ onLogin }) {
 
   return (
     <div className="login-page">
-      {/* üîπ Header: Logo + Name */}
       <div className="header" onClick={() => navigate("/")}>
         <img src={applogo} alt="TrackSure Logo" className="app-logo" />
         <h1 className="home-title">TrackSure</h1>
       </div>
 
-      {/* üîπ Login Card */}
       <div className="login-card">
         <h2>Login</h2>
         <form onSubmit={handleLogin}>
@@ -57,7 +58,7 @@ function Login({ onLogin }) {
               className="toggle-password"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? "üôà" : "üëÅÔ∏è"}
+              {showPassword ? "Ìπà" : "Ì±ÅÔ∏è"}
             </span>
           </div>
 
@@ -75,4 +76,3 @@ function Login({ onLogin }) {
 }
 
 export default Login;
-
