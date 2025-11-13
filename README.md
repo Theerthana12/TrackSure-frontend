@@ -1,7 +1,5 @@
 
-# ✅ **TrackSure Frontend — _Ready-to-Paste_ README.md**
-
-```markdown
+# ✅ TrackSure Frontend — 
 # TrackSure — Frontend
 
 Frontend application for **TrackSure**, a wearable tracking & alert system.  
