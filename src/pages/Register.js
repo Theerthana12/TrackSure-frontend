@@ -48,9 +48,12 @@ function Register() {
 
       alert("Registration successful! Please login.");
       navigate("/login");
-    } catch (err) {
-      alert("Registration failed. Try again.");
+    } 
+    catch(err) {
+      const serverMsg = err?.response?.data?.error || err?.response?.data?.message || err.message || "Registration failed. Try again.";
+      alert(serverMsg);
     }
+  
   };
 
   return (
