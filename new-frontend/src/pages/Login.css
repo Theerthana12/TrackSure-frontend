@@ -166,3 +166,34 @@
   }
 }
 
+
+/* === SVG fallback for password toggle (guaranteed icon) ===
+   This shows an inline SVG eye and hides the emoji text so users
+   never see replacement diamonds. The span still keeps aria-label
+   for accessibility and remains clickable.
+*/
+.toggle-password {
+  /* keep existing layout, add an SVG background */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path stroke='%230984e3' stroke-linecap='round' stroke-width='1.6' stroke-linejoin='round' d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/><circle cx='12' cy='12' r='3' stroke='%230984e3' stroke-width='1.6' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 20px 20px;
+  /* ensure the icon fits inside the toggle area */
+  width: 34px;
+  height: 34px;
+  display: inline-block;
+  text-align: center;
+  /* visually hide any emoji/glyph text while keeping element accessible */
+  color: transparent;
+  /* keep pointer cursor and original alignment */
+  cursor: pointer;
+}
+
+/* make sure the SVG is vertically centered in the same spot as before */
+.password-container .toggle-password {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 12px;
+  padding: 0;
+}
