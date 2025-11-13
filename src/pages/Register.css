@@ -119,3 +119,18 @@
   right: 12px;
   padding: 0;
 }
+/* override to guarantee emoji text never shows and SVG is used */
+.toggle-password {
+  color: transparent !important;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.toggle-password svg { display:block; pointer-events: none; color: #0984e3; }
+.toggle-password:hover, .toggle-password:focus { color: transparent !important; }
