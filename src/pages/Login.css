@@ -87,13 +87,14 @@
 }
 
 /* FIXED toggle position */
+
 .toggle-password {
   position: absolute;
   top: 10px;
   right: 12px;
   height: 100%;
   display: flex;
-  align-items: center;     /* perfect vertical centering */
+  align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 18px;
@@ -102,8 +103,11 @@
   border: none;
   padding: 0;
   z-index: 10;
-  line-height: 3;
+  /* emoji font stack so emoji render correctly across OS/browsers */
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Symbol", "EmojiOne Mozilla", sans-serif;
+  line-height: 1;
 }
+
 
 .toggle-password:hover {
   color: #0984e3;
