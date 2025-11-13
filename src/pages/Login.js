@@ -58,7 +58,7 @@ function Login({ onLogin }) {
               className="toggle-password"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? "í¹ˆ" : "í±ï¸"}
+              {showPassword ? "ï¿½ï¿½ï¿½" : "ï¿½ï¿½ï¿½ï¸"}
             </span>
           </div>
 
